@@ -1,0 +1,5 @@
+button:focus, button:focus-visible {
+    color:rgb(106, 240, 250);
+    outline: none;
+    font-weight: bold;
+}
