@@ -5,3 +5,6 @@ export const login = (credentials) => {
 export const register = (credentials) => {
     return axiosInstance.post("/Auth/register", credentials);
 }
+export const getAllUsers = () => {
+  return axiosInstance.get("/Auth");
+};

@@ -13,12 +13,11 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/slices/authSlice";
 import { login } from "../../api/auth";
 import formBg from "../../assets/form-bg.jpg";
-
+import { useEffect } from "react";
 export default function Login() {
   const { register, handleSubmit } = useForm();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const onSubmit = async (data) => {
     try {
       const res = await login(data);
@@ -26,12 +25,12 @@ export default function Login() {
       localStorage.setItem("token", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
       localStorage.setItem("role", res.data.role);
-      navigate("/profile");
+      if(res.data.role === "Admin") navigate('/admin')
+      else navigate('/profile');
     } catch (err) {
       console.error("Login failed", err);
     }
   };
-
   return (
     <Box
       sx={{

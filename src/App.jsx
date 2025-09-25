@@ -14,6 +14,8 @@ import { useSelector } from "react-redux";
 import NotFound from "./system/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserProfile from "./pages/Profiles/UserProfile";
+import Dashboard from "./pages/Profiles/Dashboard";
+import ItemsDashboard from "./pages/ItemsDashboard";
 
 function App() {
   const dispatch = useDispatch();
@@ -42,18 +44,10 @@ function App() {
         />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        {/* <Route
-          path="/profile"
-          element={token ? <UserProfile /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/dashboard"
-          element={token ? <Dashboard /> : <Navigate to="/login" />}
-        /> */}
         <Route
           path="/profile"
           element={
-            <ProtectedRoute allowedRoles={["user"]}>
+            <ProtectedRoute allowedRoles={["User"]}>
               <UserProfile />
             </ProtectedRoute>
           }
@@ -61,12 +55,12 @@ function App() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <AdminDashboard />
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              <Dashboard />
             </ProtectedRoute>
           }
         />
-
+        <Route path="/items" element={<ProtectedRoute allowedRoles={["Admin"]}><ItemsDashboard /></ProtectedRoute>} />
         <Route path="/unauthorized" element={<h1>🚫 Not Authorized</h1>} />
         <Route path="/notFound" element={<NotFound />} />
         <Route path="*" element={<Navigate to="/notFound" />} />
