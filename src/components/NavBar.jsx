@@ -42,9 +42,11 @@ function NavBar(props) {
         break;
       case "Items":
         if (role === "Admin") navigate("/items");
+        else navigate("/unauthorized");
         break;
       case "Stock":
         if (role === "Admin") navigate("/stock"); 
+        else navigate("/unauthorized");
         break;
       default:
         break;

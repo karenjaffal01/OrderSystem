@@ -13,6 +13,8 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/slices/authSlice";
 import { login } from "../../api/auth";
 import formBg from "../../assets/form-bg.jpg";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useEffect } from "react";
 export default function Login() {
   const { register, handleSubmit } = useForm();
@@ -29,6 +31,7 @@ export default function Login() {
       else navigate('/profile');
     } catch (err) {
       console.error("Login failed", err);
+      toast.error(err.response?.data?.message || "Login failed");
     }
   };
   return (
@@ -44,6 +47,7 @@ export default function Login() {
         p: 2,
       }}
     >
+      <ToastContainer position="top-right" />
       <Container maxWidth="xs">
         <Paper
           elevation={6}

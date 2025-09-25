@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import NavBar from "../components/NavBar";
+import NavBar from "../../components/NavBar";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   Box,
   Typography,
@@ -13,23 +15,41 @@ import {
   TextField,
   DialogActions,
 } from "@mui/material";
-import { getItems, createItem, updateItem, deleteItem } from "../api/items";
+import { getItems, createItem, updateItem, deleteItem } from "../../api/items";
 import { useSelector } from "react-redux";
+
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
 
 const ItemsDashboard = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [openDialog, setOpenDialog] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-  const [formData, setFormData] = useState({
-    itemName: "",
-    itemDescription: "",
-    itemCategory: "",
-  });
-
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const { role } = useSelector((state) => state.auth);
   const currentUser = localStorage.getItem("username") || "system";
+
+  const itemSchema = Yup.object().shape({
+    itemName: Yup.string()
+      .required("Item name is required")
+      .min(3, "Item name must be at least 3 characters"),
+    itemDescription: Yup.string()
+      .required("Description is required")
+      .max(200, "Description cannot exceed 200 characters"),
+    itemCategory: Yup.string().required("Category is required"),
+  });
+
+  const { control, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(itemSchema),
+    defaultValues: {
+      itemName: "",
+      itemDescription: "",
+      itemCategory: "",
+    },
+  });
 
   const fetchItems = async () => {
     try {
@@ -48,13 +68,13 @@ const ItemsDashboard = () => {
 
   const handleOpenDialog = (item = null) => {
     setEditingItem(item);
-    setFormData(
+    reset(
       item
         ? {
-            itemName: item.itemName,
-            itemDescription: item.itemDescription,
-            itemCategory: item.itemCategory,
-          }
+          itemName: item.itemName,
+          itemDescription: item.itemDescription,
+          itemCategory: item.itemCategory,
+        }
         : { itemName: "", itemDescription: "", itemCategory: "" }
     );
     setOpenDialog(true);
@@ -63,40 +83,41 @@ const ItemsDashboard = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingItem(null);
-    setFormData({ itemName: "", itemDescription: "", itemCategory: "" });
+    reset({ itemName: "", itemDescription: "", itemCategory: "" });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (data) => {
     try {
       if (editingItem) {
         await updateItem({
           itemId: editingItem.itemId,
-          itemName: formData.itemName,
-          itemDescription: formData.itemDescription,
-          itemCategory: formData.itemCategory,
+          ...data,
           updatedBy: currentUser,
         });
+        toast.success("Item updated successfully!");
       } else {
         await createItem({
-          itemName: formData.itemName,
-          itemDescription: formData.itemDescription,
-          itemCategory: formData.itemCategory,
+          ...data,
           createdBy: currentUser,
         });
+        toast.success("Item created successfully!");
       }
       await fetchItems();
       handleCloseDialog();
     } catch (err) {
       console.error("Failed to save item", err);
+      toast.error("Failed to save item");
     }
   };
 
   const handleDelete = async (id) => {
     try {
       await deleteItem(id);
+      toast.success("Item deleted successfully!");
       await fetchItems();
     } catch (err) {
       console.error("Failed to delete item", err);
+      toast.error("Failed to delete item");
     }
   };
 
@@ -111,6 +132,7 @@ const ItemsDashboard = () => {
   return (
     <Box sx={{ minHeight: "100vh", background: "#f5f5f5" }}>
       <NavBar />
+      <ToastContainer position="top-right" />
       <Box sx={{ px: 4, py: 6 }}>
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           Items Dashboard
@@ -147,17 +169,6 @@ const ItemsDashboard = () => {
                 >
                   By: {item.createdBy}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  display="block"
-                  sx={{ mb: 1 }}
-                >
-                  Created:{" "}
-                  {item.createdDate
-                    ? new Date(item.createdDate).toLocaleString()
-                    : "—"}
-                </Typography>
 
                 {role === "Admin" && (
                   <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
@@ -172,10 +183,14 @@ const ItemsDashboard = () => {
                       variant="outlined"
                       color="error"
                       size="small"
-                      onClick={() => handleDelete(item.itemId)}
+                      onClick={() => {
+                        setItemToDelete(item);
+                        setConfirmDeleteOpen(true);
+                      }}
                     >
                       Delete
                     </Button>
+
                   </Box>
                 )}
               </Paper>
@@ -184,46 +199,94 @@ const ItemsDashboard = () => {
         </Grid>
       </Box>
 
-      {/* Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>
-          {editingItem ? "Edit Item" : "Create Item"}
-        </DialogTitle>
-        <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
-        >
-          <TextField
-            label="Name"
-            value={formData.itemName}
-            onChange={(e) =>
-              setFormData({ ...formData, itemName: e.target.value })
-            }
-            fullWidth
+        <DialogTitle>{editingItem ? "Edit Item" : "Create Item"}</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+          <Controller
+            name="itemName"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Name"
+                fullWidth
+                error={!!errors.itemName}
+                helperText={errors.itemName?.message}
+              />
+            )}
           />
-          <TextField
-            label="Description"
-            value={formData.itemDescription}
-            onChange={(e) =>
-              setFormData({ ...formData, itemDescription: e.target.value })
-            }
-            fullWidth
+          <Controller
+            name="itemDescription"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Description"
+                fullWidth
+                error={!!errors.itemDescription}
+                helperText={errors.itemDescription?.message}
+              />
+            )}
           />
-          <TextField
-            label="Category"
-            value={formData.itemCategory}
-            onChange={(e) =>
-              setFormData({ ...formData, itemCategory: e.target.value })
-            }
-            fullWidth
+          <Controller
+            name="itemCategory"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Category"
+                fullWidth
+                error={!!errors.itemCategory}
+                helperText={errors.itemCategory?.message}
+              />
+            )}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button variant="contained" onClick={handleSave}>
+          <Button variant="contained" onClick={handleSubmit(handleSave)}>
             Save
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog
+        open={confirmDeleteOpen}
+        onClose={() => {
+          setConfirmDeleteOpen(false);
+          setItemToDelete(null);
+        }}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete "{itemToDelete?.itemName}"?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setConfirmDeleteOpen(false);
+              setItemToDelete(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={async () => {
+              if (itemToDelete) {
+                await handleDelete(itemToDelete.itemId);
+                setConfirmDeleteOpen(false);
+                setItemToDelete(null);
+              }
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Box>
   );
 };

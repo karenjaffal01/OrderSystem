@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import NavBar from "../../components/NavBar";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -7,12 +8,18 @@ import {
   Avatar,
   CircularProgress,
   Grid,
+  Button
 } from "@mui/material";
 import { getAllUsers } from "../../api/auth";
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -48,9 +55,32 @@ const Dashboard = () => {
     <Box sx={{ minHeight: "100vh", background: "#f5f5f5" }}>
       <NavBar />
       <Box sx={{ px: 4, py: 6 }}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
-          Admin Dashboard
-        </Typography>
+
+<div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  }}
+>
+  <Typography variant="h4" fontWeight="bold" gutterBottom>
+    Admin Dashboard
+  </Typography>
+
+  <Button
+    variant="contained"
+    color="primary"
+    onClick={handleLogout}
+    sx={{
+      py: 1.2,
+      fontSize: "1rem",
+      "&:hover": { backgroundColor: "#1565c0" },
+    }}
+  >
+    Logout
+  </Button>
+</div>
+
         <Typography fontWeight="bold" gutterBottom>
           All Users
         </Typography>

@@ -15,12 +15,15 @@ import NotFound from "./system/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserProfile from "./pages/Profiles/UserProfile";
 import Dashboard from "./pages/Profiles/Dashboard";
-import ItemsDashboard from "./pages/ItemsDashboard";
+import ItemsDashboard from "./pages/items/ItemsDashboard";
+import AccessDenied from "./system/accessDenied";
+import StockDashboard from "./pages/stock/StockDashboard";
 
 function App() {
   const dispatch = useDispatch();
 
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const role = localStorage.getItem("role");
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -36,12 +39,17 @@ function App() {
           path="/"
           element={
             isAuthenticated ? (
-              <Navigate to="/profile" />
+              role === "Admin" ? (
+                <Navigate to="/admin" />
+              ) : (
+                <Navigate to="/profile" />
+              )
             ) : (
               <Navigate to="/login" />
             )
           }
         />
+
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route
@@ -60,8 +68,23 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/items" element={<ProtectedRoute allowedRoles={["Admin"]}><ItemsDashboard /></ProtectedRoute>} />
-        <Route path="/unauthorized" element={<h1>🚫 Not Authorized</h1>} />
+        <Route path="/items" element={
+          role === "Admin" ? (
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              < ItemsDashboard />
+            </ProtectedRoute>
+          ) : <Navigate to="/unauthorized" />
+        }
+        />
+        <Route path="/stock" element={
+          role === "Admin" ? (
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              < StockDashboard />
+            </ProtectedRoute>
+          ) : <Navigate to="/unauthorized" />
+        }
+        />
+        <Route path="/unauthorized" element={<AccessDenied />} />
         <Route path="/notFound" element={<NotFound />} />
         <Route path="*" element={<Navigate to="/notFound" />} />
       </Routes>

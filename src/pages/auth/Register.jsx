@@ -7,14 +7,37 @@ import {
   Typography,
   Paper,
 } from "@mui/material";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
 import { useNavigate, Link } from "react-router-dom";
 import { register as reg } from "../../api/auth";
 import formBg from "../../assets/form-bg.jpg";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+const registerSchema = Yup.object().shape({
+  Username: Yup.string()
+    .required("Username is required")
+    .min(3, "Username must be at least 3 characters"),
+  Password: Yup.string()
+    .required("Password is required")
+    .min(6, "Password must be at least 6 characters"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("Password"), null], "Passwords must match")
+    .required("Please confirm your password"),
+});
 
 export default function Register() {
   const navigate = useNavigate();
-  const { handleSubmit, register } = useForm();
+
+  const { handleSubmit, control, formState: { errors } } = useForm({
+    resolver: yupResolver(registerSchema),
+    defaultValues: {
+      Username: "",
+      Password: "",
+      confirmPassword: "",
+    },
+  });
 
   const onSubmit = async (data) => {
     const payload = {
@@ -22,10 +45,11 @@ export default function Register() {
       Password: data.Password,
     };
     try {
-      const res = await reg(payload);
+      await reg(payload);
       navigate("/login");
     } catch (err) {
       console.error("Registration failed", err);
+      toast.error(err.response.data.message || "Registration failed");
     }
   };
 
@@ -42,6 +66,7 @@ export default function Register() {
         p: 2,
       }}
     >
+    <ToastContainer position="top-right" />
       <Container maxWidth="xs">
         <Paper
           elevation={6}
@@ -75,30 +100,49 @@ export default function Register() {
             onSubmit={handleSubmit(onSubmit)}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
-            <TextField
-              label="Username"
-              variant="outlined"
-              fullWidth
-              required
-              {...register("Username", { required: "Username is required" })}
+            <Controller
+              name="Username"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Username"
+                  variant="outlined"
+                  fullWidth
+                  error={!!errors.Username}
+                  helperText={errors.Username?.message}
+                />
+              )}
             />
-            <TextField
-              label="Password"
-              type="password"
-              variant="outlined"
-              fullWidth
-              required
-              {...register("Password", { required: "Password is required" })}
+            <Controller
+              name="Password"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Password"
+                  type="password"
+                  variant="outlined"
+                  fullWidth
+                  error={!!errors.Password}
+                  helperText={errors.Password?.message}
+                />
+              )}
             />
-            <TextField
-              label="Confirm Password"
-              type="password"
-              variant="outlined"
-              fullWidth
-              required
-              {...register("confirmPassword", {
-                required: "Please confirm your password",
-              })}
+            <Controller
+              name="confirmPassword"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Confirm Password"
+                  type="password"
+                  variant="outlined"
+                  fullWidth
+                  error={!!errors.confirmPassword}
+                  helperText={errors.confirmPassword?.message}
+                />
+              )}
             />
 
             <Button
