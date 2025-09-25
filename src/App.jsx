@@ -18,28 +18,30 @@ import UserProfile from "./pages/Profiles/UserProfile";
 function App() {
   const dispatch = useDispatch();
 
-  const isAuthenticated = useSelector(state => state.auth.isAuthenticated)
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-    const refreshToken = localStorage.getItem('refreshToken');
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    const refreshToken = localStorage.getItem("refreshToken");
     if (token) {
       dispatch(loginSuccess({ token, refreshToken, role }));
     }
-  }, [])
+  }, []);
   return (
     <Router>
       <Routes>
         <Route
           path="/"
           element={
-            isAuthenticated ?
-              <Navigate to="/profile" /> :
+            isAuthenticated ? (
+              <Navigate to="/profile" />
+            ) : (
               <Navigate to="/login" />
+            )
           }
         />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         {/* <Route
           path="/profile"
           element={token ? <UserProfile /> : <Navigate to="/login" />}
@@ -48,11 +50,24 @@ function App() {
           path="/dashboard"
           element={token ? <Dashboard /> : <Navigate to="/login" />}
         /> */}
-        <Route path='/profile' element={
-          <ProtectedRoute>
-            <UserProfile />
-          </ProtectedRoute>
-        }/>
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute allowedRoles={["user"]}>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/unauthorized" element={<h1>🚫 Not Authorized</h1>} />
         <Route path="/notFound" element={<NotFound />} />
         <Route path="*" element={<Navigate to="/notFound" />} />
       </Routes>
