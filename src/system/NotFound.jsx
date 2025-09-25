@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
+import NavBar from "../components/NavBar";
 const NotFound = () => {
   const navigate = useNavigate();
 
@@ -18,6 +18,7 @@ const NotFound = () => {
         px: 3,
       }}
     >
+      <NavBar />
       <Typography variant="h1" fontWeight="bold" color="error">
         404
       </Typography>

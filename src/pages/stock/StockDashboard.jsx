@@ -13,13 +13,18 @@ import {
   TextField,
   DialogActions,
 } from "@mui/material";
-import { getAllStock, createStock, updateStockQuantity, deleteStock } from "../../api/stock";
+import {
+  getAllStock,
+  createStock,
+  updateStockQuantity,
+  deleteStock,
+} from "../../api/stock";
 import { useSelector } from "react-redux";
 
 const StockDashboard = () => {
   const [stockList, setStockList] = useState([]);
   const [loading, setLoading] = useState(true);
-    const [editingStock, setEditingStock] = useState(null);
+  const [editingStock, setEditingStock] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [quantity, setQuantity] = useState(0);
 
@@ -95,15 +100,10 @@ const StockDashboard = () => {
                   color="text.secondary"
                   display="block"
                 >
-                  Created: {stock.created_date ? new Date(stock.created_date).toLocaleString() : "—"}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  display="block"
-                  sx={{ mb: 1 }}
-                >
-                  Updated: {stock.updated_date ? new Date(stock.updated_date).toLocaleString() : "—"}
+                  Created:{" "}
+                  {stock.created_date
+                    ? new Date(stock.created_date).toLocaleString()
+                    : "—"}
                 </Typography>
 
                 {role === "Admin" && (
@@ -113,12 +113,11 @@ const StockDashboard = () => {
                       size="small"
                       onClick={() => {
                         setEditingStock(stock);
-                        handleOpenDialog(stock)
+                        handleOpenDialog(stock);
                       }}
                     >
                       Edit Quantity
                     </Button>
-
                   </Box>
                 )}
               </Paper>
@@ -128,7 +127,9 @@ const StockDashboard = () => {
       </Box>
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>"Edit Quantity"</DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+        >
           <TextField
             label="Quantity"
             type="number"

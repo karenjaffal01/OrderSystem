@@ -33,19 +33,18 @@ function NavBar(props) {
   const handleNavClick = (item) => {
     switch (item) {
       case "Profile":
-        if(role === "Admin") navigate("/admin")
-        else
-        navigate("/profile");
+        if (role === "Admin") navigate("/admin");
+        else navigate("/profile");
         break;
       case "Orders":
-        navigate("/orders"); 
+        navigate("/orders");
         break;
       case "Items":
         if (role === "Admin") navigate("/items");
         else navigate("/unauthorized");
         break;
       case "Stock":
-        if (role === "Admin") navigate("/stock"); 
+        if (role === "Admin") navigate("/stock");
         else navigate("/unauthorized");
         break;
       default:
@@ -65,7 +64,10 @@ function NavBar(props) {
             <ListItemButton
               sx={{ textAlign: "center" }}
               disableRipple
-              onClick={() => handleNavClick(item)}
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavClick(item);
+              }}
             >
               <ListItemText primary={item} />
             </ListItemButton>
@@ -122,11 +124,14 @@ function NavBar(props) {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, 
+            keepMounted: true,
           }}
           sx={{
             display: { xs: "block", sm: "none" },
-            "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: drawerWidth,
+            },
           }}
         >
           {drawer}

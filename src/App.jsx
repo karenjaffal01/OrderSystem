@@ -18,6 +18,7 @@ import Dashboard from "./pages/Profiles/Dashboard";
 import ItemsDashboard from "./pages/items/ItemsDashboard";
 import AccessDenied from "./system/accessDenied";
 import StockDashboard from "./pages/stock/StockDashboard";
+import OrderList from "./pages/order/OrderList";
 
 function App() {
   const dispatch = useDispatch();
@@ -68,22 +69,31 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/items" element={
-          role === "Admin" ? (
-            <ProtectedRoute allowedRoles={["Admin"]}>
-              < ItemsDashboard />
-            </ProtectedRoute>
-          ) : <Navigate to="/unauthorized" />
-        }
+        <Route
+          path="/items"
+          element={
+            role === "Admin" ? (
+              <ProtectedRoute allowedRoles={["Admin"]}>
+                <ItemsDashboard />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/unauthorized" />
+            )
+          }
         />
-        <Route path="/stock" element={
-          role === "Admin" ? (
-            <ProtectedRoute allowedRoles={["Admin"]}>
-              < StockDashboard />
-            </ProtectedRoute>
-          ) : <Navigate to="/unauthorized" />
-        }
+        <Route
+          path="/stock"
+          element={
+            role === "Admin" ? (
+              <ProtectedRoute allowedRoles={["Admin"]}>
+                <StockDashboard />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/unauthorized" />
+            )
+          }
         />
+        <Route path="/orders" element={<OrderList />} />
         <Route path="/unauthorized" element={<AccessDenied />} />
         <Route path="/notFound" element={<NotFound />} />
         <Route path="*" element={<Navigate to="/notFound" />} />
